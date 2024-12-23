@@ -2,6 +2,21 @@
 import { useState, useEffect } from 'react';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 
+const AMT_PHASEOUT_THRESHOLDS = {
+    '2024': {
+        'Single': 609350,
+        'Head of Household': 609350,
+        'Married Filing Jointly': 1218700,
+        'Married Filing Separately': 609350
+    },
+    '2025': {
+        'Single': 626350,
+        'Head of Household': 626350,
+        'Married Filing Jointly': 1252700,
+        'Married Filing Separately': 626350
+    }
+};
+
 const AMT_EXEMPTIONS = {
     '2024': {
         'Single': 85700,
@@ -175,6 +190,7 @@ export default function OptionCalculator() {
     });
 
     const [showTooltip, setShowTooltip] = useState(false);
+    const [showExemptionTooltip, setShowExemptionTooltip] = useState(false);
     const [showTaxBracketTooltip, setShowTaxBracketTooltip] = useState(false);
 
     const calculateTaxByBracket = (income: number, filingStatus: FilingStatus, taxYear: TaxYear) => {
@@ -241,7 +257,17 @@ export default function OptionCalculator() {
 
         const adjustment = (fairMarketValue - strikePrice) * numShares;
         const amtIncome = income + adjustment;
-        const amtExemption = AMT_EXEMPTIONS[inputs.taxYear][inputs.filingStatus];
+
+        // Calculate AMT exemption with phaseout
+        let amtExemption = AMT_EXEMPTIONS[inputs.taxYear][inputs.filingStatus];
+        const phaseoutThreshold = AMT_PHASEOUT_THRESHOLDS[inputs.taxYear][inputs.filingStatus];
+
+        if (amtIncome > phaseoutThreshold) {
+            // Reduce exemption by 25 cents for each dollar above threshold
+            const reduction = (amtIncome - phaseoutThreshold) * 0.25;
+            amtExemption = Math.max(0, amtExemption - reduction);
+        }
+
         const amtBase = Math.max(0, amtIncome - amtExemption);
         const amtRate = amtBase <= AMT_RATE_THRESHOLDS[inputs.taxYear][inputs.filingStatus] ? 0.26 : 0.28;
         const tentativeMinTax = amtBase * amtRate;
@@ -404,7 +430,29 @@ export default function OptionCalculator() {
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <span className="text-xl text-gray-900 italic">− AMT Exemption ({inputs.filingStatus})</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xl text-gray-900 italic">− AMT Exemption ({inputs.filingStatus})</span>
+                                <div
+                                    className="relative"
+                                    onMouseEnter={() => setShowExemptionTooltip(true)}
+                                    onMouseLeave={() => setShowExemptionTooltip(false)}
+                                >
+                                    <HelpCircle className="h-5 w-5 text-gray-400" />
+                                    {showExemptionTooltip && (
+                                        <div className="absolute left-0 bottom-full mb-2 w-80 p-3 bg-gray-800 text-white text-sm rounded shadow-lg z-10">
+                                            <strong>{inputs.taxYear} AMT Exemption Phase-out Threshold</strong>
+                                            <ul className="mt-2 space-y-1">
+                                                <li>Single or head of household: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
+                                                <li>Married, filing separately: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
+                                                <li>Married, filing jointly: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
+                                            </ul>
+                                            <div className="mt-2">
+                                                <small>The exemption is reduced by 25¢ for each dollar of AMT income above these thresholds</small>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                             <span className="text-xl text-gray-900">${results.amtExemption.toLocaleString()}</span>
                         </div>
 
@@ -418,7 +466,7 @@ export default function OptionCalculator() {
                         <div className="flex justify-between items-center relative">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl text-gray-900">Tentative Minimum Tax</span>
+                                    <span className="text-xl text-gray-900">Alternative Minimum Tax</span>
                                     <div
                                         className="relative"
                                         onMouseEnter={() => setShowTooltip(true)}
