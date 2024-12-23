@@ -270,7 +270,16 @@ export default function OptionCalculator() {
                     </h1>
 
                     <p className="text-sm mb-4 text-gray-700">
-                        This calculator helps you understand the potential Alternative Minimum Tax (AMT) implications when exercising Incentive Stock Options (ISOs).
+                        This calculator helps you understand the potential Alternative Minimum Tax (AMT) implications when exercising Incentive Stock Options (ISOs). My version of {' '}
+                        <a
+                            href="https://erikbarbara.github.io/iso-amt-calculator/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                            Erik Barbara
+                        </a>
+                        's calc, which I recommend for a written explanation.
                     </p>
 
                     <div className="bg-white rounded-lg p-6 border border-gray-200">
