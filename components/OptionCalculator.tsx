@@ -297,7 +297,7 @@ export default function OptionCalculator() {
 
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
-                                    <label className="text-sm text-gray-700">Annual Income (AGI)</label>
+                                    <label className="text-sm text-gray-700">Adjusted Gross Income</label>
                                     <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
@@ -339,7 +339,7 @@ export default function OptionCalculator() {
 
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
-                                    <label className="text-sm text-gray-700">Current 409A Share Value</label>
+                                    <label className="text-sm text-gray-700">Current 409A Fair Market Value</label>
                                     <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
@@ -378,12 +378,12 @@ export default function OptionCalculator() {
                 {/* Right column - Results */}
                 <div className="pt-16">
                     <h3 className="text-xl mb-6 text-gray-900">
-                        Given your input, here's an AMT estimate for {inputs.taxYear}.
+                        Here's an estimate of whether you'd owe AMT tax in {inputs.taxYear}, and if so, how much.
                     </h3>
 
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <span className="text-xl text-gray-900">AGI</span>
+                            <span className="text-xl text-gray-900">Adjusted Gross Income</span>
                             <span className="text-xl text-gray-900">${results.income.toLocaleString()}</span>
                         </div>
 
@@ -440,7 +440,7 @@ export default function OptionCalculator() {
 
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <span className="text-xl text-gray-900 italic">Ordinary Income Tax</span>
+                                <span className="text-xl text-gray-900 italic">Federal Ordinary Income Tax</span>
                                 <div
                                     className="relative"
                                     onMouseEnter={() => setShowTaxBracketTooltip(true)}
