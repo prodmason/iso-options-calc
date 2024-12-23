@@ -174,6 +174,7 @@ export default function OptionCalculator() {
 
     const [showExemptionTooltip, setShowExemptionTooltip] = useState(false);
     const [showTaxRateTooltip, setShowTaxRateTooltip] = useState(false);
+    const [showTaxCalcTooltip, setShowTaxCalcTooltip] = useState(false);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -246,14 +247,13 @@ export default function OptionCalculator() {
     return (
         <div className="max-w-6xl mx-auto p-2 sm:p-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
-                {/* Left column - Inputs */}
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
                         ISO Exercise Calculator with AMT Implications
                     </h1>
 
                     <p className="text-xs sm:text-sm mb-4 text-gray-700">
-                        This calculator helps you understand the potential Alternative Minimum Tax (AMT) implications when exercising Incentive Stock Options (ISOs). My (updated) version of {' '}
+                        This calculator helps you understand the potential Alternative Minimum Tax (AMT) implications when exercising Incentive Stock Options (ISOs). My version of {' '}
                         <a
                             href="https://erikbarbara.github.io/iso-amt-calculator/"
                             target="_blank"
@@ -338,6 +338,7 @@ export default function OptionCalculator() {
                                     className="w-full p-2 bg-gray-50 rounded text-xs sm:text-sm text-gray-900 border border-gray-200"
                                 />
                             </div>
+
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-xs sm:text-sm text-gray-700">Filing Status</label>
@@ -397,14 +398,26 @@ export default function OptionCalculator() {
                                         <HelpCircle className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
                                         {showExemptionTooltip && (
                                             <div className="absolute left-0 bottom-full mb-2 w-64 sm:w-80 p-3 bg-gray-800 text-white text-xs sm:text-sm rounded shadow-lg z-10">
-                                                <strong>{inputs.taxYear} AMT Exemption Phase-out Threshold</strong>
-                                                <ul className="mt-2 space-y-1">
-                                                    <li>Single or head of household: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
-                                                    <li>Married, filing separately: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
-                                                    <li>Married, filing jointly: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
-                                                </ul>
-                                                <div className="mt-2 text-xs text-gray-300">
-                                                    Above this threshold, the exemption amount is reduced by 25 cents for each dollar of AMT income.
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        <strong>{inputs.taxYear} AMT Exemption Amounts</strong>
+                                                        <ul className="mt-1 space-y-1">
+                                                            <li>Single or head of household: ${AMT_EXEMPTIONS[inputs.taxYear]['Single'].toLocaleString()}</li>
+                                                            <li>Married, filing separately: ${AMT_EXEMPTIONS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
+                                                            <li>Married, filing jointly: ${AMT_EXEMPTIONS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div>
+                                                        <strong>{inputs.taxYear} AMT Exemption Phase-out Threshold</strong>
+                                                        <ul className="mt-1 space-y-1">
+                                                            <li>Single or head of household: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
+                                                            <li>Married, filing separately: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
+                                                            <li>Married, filing jointly: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div className="text-xs text-gray-300">
+                                                        Above the phase-out threshold, the exemption amount is reduced by 25 cents for each dollar of AMT income.
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
@@ -449,7 +462,50 @@ export default function OptionCalculator() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                            <span className="text-base sm:text-xl text-gray-900 italic">Federal Ordinary Income Tax</span>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-base sm:text-xl text-gray-900 italic">Federal Ordinary Income Tax</span>
+                                    <div
+                                        className="relative"
+                                        onMouseEnter={() => setShowTaxCalcTooltip(true)}
+                                        onMouseLeave={() => setShowTaxCalcTooltip(false)}
+                                    >
+                                        <HelpCircle className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
+                                        {showTaxCalcTooltip && (
+                                            <div className="absolute left-0 bottom-full mb-2 w-80 p-3 bg-gray-800 text-white text-xs sm:text-sm rounded shadow-lg z-10">
+                                                <div className="space-y-2">
+                                                    <div>
+                                                        <strong>Tax Calculation Breakdown</strong>
+                                                        <div>Standard Deduction: ${STANDARD_DEDUCTIONS[inputs.taxYear][inputs.filingStatus].toLocaleString()}</div>
+                                                        <div>Taxable Income: ${(results.income - STANDARD_DEDUCTIONS[inputs.taxYear][inputs.filingStatus]).toLocaleString()}</div>
+                                                    </div>
+                                                    <div>
+                                                        {TAX_BRACKETS[inputs.taxYear][inputs.filingStatus].map((bracket, index) => {
+                                                            const nextBracket = TAX_BRACKETS[inputs.taxYear][inputs.filingStatus][index + 1];
+                                                            const income = results.income - STANDARD_DEDUCTIONS[inputs.taxYear][inputs.filingStatus];
+                                                            const bracketStart = bracket.threshold;
+                                                            const bracketEnd = nextBracket ? nextBracket.threshold : Infinity;
+                                                            const incomeInBracket = Math.min(
+                                                                Math.max(0, income - bracketStart),
+                                                                bracketEnd - bracketStart
+                                                            );
+                                                            if (incomeInBracket > 0) {
+                                                                return (
+                                                                    <div key={index}>
+                                                                        {bracket.rate * 100}% bracket (${bracket.threshold.toLocaleString()} to {nextBracket ? '$' + nextBracket.threshold.toLocaleString() : '∞'}):
+                                                                        <div className="text-gray-300">Tax in bracket: ${Math.round(incomeInBracket * bracket.rate).toLocaleString()}</div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                             <span className="text-base sm:text-xl text-gray-900">${results.ordinaryIncomeTax.toLocaleString()}</span>
                         </div>
 
