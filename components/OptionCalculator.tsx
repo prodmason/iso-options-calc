@@ -298,7 +298,6 @@ export default function OptionCalculator() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-sm text-gray-700">Adjusted Gross Income</label>
-                                    <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
                                     type="text"
@@ -312,7 +311,6 @@ export default function OptionCalculator() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-sm text-gray-700">Number of ISOs to Exercise</label>
-                                    <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
                                     type="text"
@@ -326,7 +324,6 @@ export default function OptionCalculator() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-sm text-gray-700">Strike Price</label>
-                                    <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
                                     type="text"
@@ -340,7 +337,6 @@ export default function OptionCalculator() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-sm text-gray-700">Current 409A Fair Market Value</label>
-                                    <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <input
                                     type="text"
@@ -354,7 +350,6 @@ export default function OptionCalculator() {
                             <div className="space-y-1">
                                 <div className="flex items-center gap-1">
                                     <label className="text-sm text-gray-700">Filing Status</label>
-                                    <HelpCircle className="h-4 w-4 text-gray-400" />
                                 </div>
                                 <div className="relative">
                                     <select
