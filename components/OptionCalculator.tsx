@@ -154,10 +154,10 @@ export default function OptionCalculator() {
         filingStatus: FilingStatus;
     }>({
         taxYear: '2024',
-        annualIncome: '215000',
+        annualIncome: '150000',
         numISOs: '1000',
-        strikePrice: '1.00',
-        shareValue: '10.00',
+        strikePrice: '5.00',
+        shareValue: '25.00',
         filingStatus: 'Single'
     });
 
@@ -424,7 +424,7 @@ export default function OptionCalculator() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-base sm:text-xl text-gray-900">Tentative Minimum Tax</span>
+                                    <span className="text-base sm:text-xl text-gray-900">Alternative Minimum Tax</span>
                                     <div
                                         className="relative"
                                         onMouseEnter={() => setShowTaxRateTooltip(true)}
