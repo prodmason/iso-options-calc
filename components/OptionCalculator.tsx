@@ -156,10 +156,10 @@ export default function OptionCalculator() {
         filingStatus: FilingStatus;
     }>({
         taxYear: '2024',
-        annualIncome: '215000',
+        annualIncome: '150000',
         numISOs: '1000',
-        strikePrice: '1.00',
-        shareValue: '10.00',
+        strikePrice: '5.00',
+        shareValue: '25.00',
         filingStatus: 'Single'
     });
 
