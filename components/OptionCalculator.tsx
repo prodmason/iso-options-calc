@@ -17,7 +17,27 @@ const AMT_EXEMPTIONS = {
     }
 };
 
-const STANDARD_DEDUCTIONS = {
+type TaxYear = '2024' | '2025';
+type FilingStatus = 'Single' | 'Head of Household' | 'Married Filing Jointly' | 'Married Filing Separately';
+
+interface StandardDeductions {
+    [year: string]: {
+        [status: string]: number;
+    };
+}
+
+interface TaxBracket {
+    rate: number;
+    threshold: number;
+}
+
+interface TaxBrackets {
+    [year: string]: {
+        [status: string]: TaxBracket[];
+    };
+}
+
+const STANDARD_DEDUCTIONS: StandardDeductions = {
     '2024': {
         'Single': 14600,
         'Head of Household': 21900,
@@ -32,7 +52,7 @@ const STANDARD_DEDUCTIONS = {
     }
 };
 
-const TAX_BRACKETS = {
+const TAX_BRACKETS: TaxBrackets = {
     '2024': {
         'Single': [
             { rate: 0.10, threshold: 0 },
@@ -127,7 +147,14 @@ const AMT_RATE_THRESHOLDS = {
 };
 
 export default function OptionCalculator() {
-    const [inputs, setInputs] = useState({
+    const [inputs, setInputs] = useState<{
+        taxYear: TaxYear;
+        annualIncome: string;
+        numISOs: string;
+        strikePrice: string;
+        shareValue: string;
+        filingStatus: FilingStatus;
+    }>({
         taxYear: '2024',
         annualIncome: '215000',
         numISOs: '1000',
@@ -150,7 +177,7 @@ export default function OptionCalculator() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [showTaxBracketTooltip, setShowTaxBracketTooltip] = useState(false);
 
-    const calculateTaxByBracket = (income: number, filingStatus: string, taxYear: string) => {
+    const calculateTaxByBracket = (income: number, filingStatus: FilingStatus, taxYear: TaxYear) => {
         const standardDeduction = STANDARD_DEDUCTIONS[taxYear][filingStatus];
         const taxableIncome = Math.max(0, income - standardDeduction);
         const brackets = TAX_BRACKETS[taxYear][filingStatus];
