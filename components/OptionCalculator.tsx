@@ -287,15 +287,15 @@ export default function OptionCalculator() {
     }, [inputs]);
 
     return (
-        <div className="max-w-6xl mx-auto p-4">
-            <div className="grid grid-cols-2 gap-8">
+        <div className="max-w-6xl mx-auto p-2 sm:p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                 {/* Left column - Inputs */}
                 <div>
-                    <h1 className="text-2xl font-bold mb-2 text-gray-900">
+                    <h1 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
                         ISO Exercise Calculator with AMT Implications
                     </h1>
 
-                    <p className="text-sm mb-4 text-gray-700">
+                    <p className="text-xs sm:text-sm mb-4 text-gray-700">
                         This calculator helps you understand the potential Alternative Minimum Tax (AMT) implications when exercising Incentive Stock Options (ISOs). My version of {' '}
                         <a
                             href="https://erikbarbara.github.io/iso-amt-calculator/"
@@ -308,8 +308,8 @@ export default function OptionCalculator() {
                         's calc, which I recommend for a written explanation.
                     </p>
 
-                    <div className="bg-white rounded-lg p-6 border border-gray-200">
-                        <h2 className="text-xl font-medium mb-4 text-gray-900">Input Parameters</h2>
+                    <div className="bg-white rounded-lg p-3 sm:p-6 border border-gray-200">
+                        <h2 className="text-base sm:text-lg font-medium mb-4 text-gray-900">Input Parameters</h2>
 
                         <div className="space-y-4">
                             <div className="space-y-1">
@@ -430,29 +430,7 @@ export default function OptionCalculator() {
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <span className="text-xl text-gray-900 italic">− AMT Exemption ({inputs.filingStatus})</span>
-                                <div
-                                    className="relative"
-                                    onMouseEnter={() => setShowExemptionTooltip(true)}
-                                    onMouseLeave={() => setShowExemptionTooltip(false)}
-                                >
-                                    <HelpCircle className="h-5 w-5 text-gray-400" />
-                                    {showExemptionTooltip && (
-                                        <div className="absolute left-0 bottom-full mb-2 w-80 p-3 bg-gray-800 text-white text-sm rounded shadow-lg z-10">
-                                            <strong>{inputs.taxYear} AMT Exemption Phase-out Threshold</strong>
-                                            <ul className="mt-2 space-y-1">
-                                                <li>Single or head of household: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
-                                                <li>Married, filing separately: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
-                                                <li>Married, filing jointly: ${AMT_PHASEOUT_THRESHOLDS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
-                                            </ul>
-                                            <div className="mt-2">
-                                                <small>The exemption is reduced by 25¢ for each dollar of AMT income above these thresholds</small>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                            <span className="text-xl text-gray-900 italic">− AMT Exemption ({inputs.filingStatus})</span>
                             <span className="text-xl text-gray-900">${results.amtExemption.toLocaleString()}</span>
                         </div>
 
@@ -466,7 +444,7 @@ export default function OptionCalculator() {
                         <div className="flex justify-between items-center relative">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl text-gray-900">Alternative Minimum Tax</span>
+                                    <span className="text-xl text-gray-900">Tentative Minimum Tax</span>
                                     <div
                                         className="relative"
                                         onMouseEnter={() => setShowTooltip(true)}
