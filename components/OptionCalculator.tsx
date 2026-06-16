@@ -2,93 +2,59 @@
 import { useState, useEffect } from 'react';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 
-type TaxYear = '2024' | '2025';
 type FilingStatus = 'Single' | 'Head of Household' | 'Married Filing Jointly' | 'Married Filing Separately';
+type TaxYear = '2025' | '2026';
 
+const TAX_YEARS: TaxYear[] = ['2025', '2026'];
+
+// Tax-year tables are from official IRS inflation adjustment releases and revenue procedures.
+// 2027 is intentionally omitted until official IRS tables are available.
 const AMT_PHASEOUT_THRESHOLDS = {
-    '2024': {
-        'Single': 609350,
-        'Head of Household': 609350,
-        'Married Filing Jointly': 1218700,
-        'Married Filing Separately': 609350
-    },
     '2025': {
         'Single': 626350,
         'Head of Household': 626350,
         'Married Filing Jointly': 1252700,
         'Married Filing Separately': 626350
+    },
+    '2026': {
+        'Single': 500000,
+        'Head of Household': 500000,
+        'Married Filing Jointly': 1000000,
+        'Married Filing Separately': 500000
     }
 };
 
 const AMT_EXEMPTIONS = {
-    '2024': {
-        'Single': 85700,
-        'Head of Household': 85700,
-        'Married Filing Jointly': 133300,
-        'Married Filing Separately': 66650
-    },
     '2025': {
         'Single': 88100,
         'Head of Household': 88100,
         'Married Filing Jointly': 137000,
         'Married Filing Separately': 68500
+    },
+    '2026': {
+        'Single': 90100,
+        'Head of Household': 90100,
+        'Married Filing Jointly': 140200,
+        'Married Filing Separately': 70100
     }
 };
 
 const AMT_RATE_THRESHOLDS = {
-    '2024': {
-        'Single': 232600,
-        'Head of Household': 232600,
-        'Married Filing Jointly': 232600,
-        'Married Filing Separately': 116300
-    },
     '2025': {
         'Single': 239100,
         'Head of Household': 239100,
         'Married Filing Jointly': 239100,
         'Married Filing Separately': 119550
+    },
+    '2026': {
+        'Single': 244500,
+        'Head of Household': 244500,
+        'Married Filing Jointly': 244500,
+        'Married Filing Separately': 122250
     }
 };
 
 const TAX_BRACKETS = {
-    '2024': {
-        'Single': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 11600 },
-            { rate: 0.22, threshold: 47150 },
-            { rate: 0.24, threshold: 100525 },
-            { rate: 0.32, threshold: 191950 },
-            { rate: 0.35, threshold: 243725 },
-            { rate: 0.37, threshold: 609350 }
-        ],
-        'Head of Household': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 16550 },
-            { rate: 0.22, threshold: 63100 },
-            { rate: 0.24, threshold: 100500 },
-            { rate: 0.32, threshold: 191950 },
-            { rate: 0.35, threshold: 243700 },
-            { rate: 0.37, threshold: 609350 }
-        ],
-        'Married Filing Jointly': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 23200 },
-            { rate: 0.22, threshold: 94300 },
-            { rate: 0.24, threshold: 201050 },
-            { rate: 0.32, threshold: 383900 },
-            { rate: 0.35, threshold: 487450 },
-            { rate: 0.37, threshold: 731200 }
-        ],
-        'Married Filing Separately': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 11600 },
-            { rate: 0.22, threshold: 47150 },
-            { rate: 0.24, threshold: 100525 },
-            { rate: 0.32, threshold: 191950 },
-            { rate: 0.35, threshold: 243725 },
-            { rate: 0.37, threshold: 365600 }
-        ]
-    },
     '2025': {
         'Single': [
             { rate: 0.10, threshold: 0 },
@@ -126,21 +92,59 @@ const TAX_BRACKETS = {
             { rate: 0.35, threshold: 250525 },
             { rate: 0.37, threshold: 375800 }
         ]
+    },
+    '2026': {
+        'Single': [
+            { rate: 0.10, threshold: 0 },
+            { rate: 0.12, threshold: 12400 },
+            { rate: 0.22, threshold: 50400 },
+            { rate: 0.24, threshold: 105700 },
+            { rate: 0.32, threshold: 201775 },
+            { rate: 0.35, threshold: 256225 },
+            { rate: 0.37, threshold: 640600 }
+        ],
+        'Head of Household': [
+            { rate: 0.10, threshold: 0 },
+            { rate: 0.12, threshold: 17700 },
+            { rate: 0.22, threshold: 67450 },
+            { rate: 0.24, threshold: 105700 },
+            { rate: 0.32, threshold: 201750 },
+            { rate: 0.35, threshold: 256200 },
+            { rate: 0.37, threshold: 640600 }
+        ],
+        'Married Filing Jointly': [
+            { rate: 0.10, threshold: 0 },
+            { rate: 0.12, threshold: 24800 },
+            { rate: 0.22, threshold: 100800 },
+            { rate: 0.24, threshold: 211400 },
+            { rate: 0.32, threshold: 403550 },
+            { rate: 0.35, threshold: 512450 },
+            { rate: 0.37, threshold: 768700 }
+        ],
+        'Married Filing Separately': [
+            { rate: 0.10, threshold: 0 },
+            { rate: 0.12, threshold: 12400 },
+            { rate: 0.22, threshold: 50400 },
+            { rate: 0.24, threshold: 105700 },
+            { rate: 0.32, threshold: 201775 },
+            { rate: 0.35, threshold: 256225 },
+            { rate: 0.37, threshold: 384350 }
+        ]
     }
 };
 
 const STANDARD_DEDUCTIONS = {
-    '2024': {
-        'Single': 14600,
-        'Head of Household': 21900,
-        'Married Filing Jointly': 29200,
-        'Married Filing Separately': 14600
-    },
     '2025': {
-        'Single': 15000,
-        'Head of Household': 22500,
-        'Married Filing Jointly': 30000,
-        'Married Filing Separately': 15000
+        'Single': 15750,
+        'Head of Household': 23625,
+        'Married Filing Jointly': 31500,
+        'Married Filing Separately': 15750
+    },
+    '2026': {
+        'Single': 16100,
+        'Head of Household': 24150,
+        'Married Filing Jointly': 32200,
+        'Married Filing Separately': 16100
     }
 };
 
@@ -153,7 +157,7 @@ export default function OptionCalculator() {
         shareValue: string;
         filingStatus: FilingStatus;
     }>({
-        taxYear: '2024',
+        taxYear: '2026',
         annualIncome: '150000',
         numISOs: '1000',
         strikePrice: '5.00',
@@ -162,14 +166,14 @@ export default function OptionCalculator() {
     });
 
     const [results, setResults] = useState({
-        income: 215000,
-        adjustment: 9000,
-        amtIncome: 224000,
-        amtExemption: AMT_EXEMPTIONS['2024']['Single'],
-        amtBase: 148100,
-        tentativeMinTax: 38506,
-        ordinaryIncomeTax: 51600,
-        payableTax: 51600
+        income: 150000,
+        adjustment: 20000,
+        amtIncome: 170000,
+        amtExemption: AMT_EXEMPTIONS['2026']['Single'],
+        amtBase: 79900,
+        tentativeMinTax: 20774,
+        ordinaryIncomeTax: 24734,
+        payableTax: 24734
     });
 
     const [showExemptionTooltip, setShowExemptionTooltip] = useState(false);
@@ -280,8 +284,9 @@ export default function OptionCalculator() {
                                         onChange={handleInputChange}
                                         className="w-full p-2 bg-gray-50 rounded text-xs sm:text-sm text-gray-900 border border-gray-200 appearance-none"
                                     >
-                                        <option value="2024">2024</option>
-                                        <option value="2025">2025</option>
+                                        {TAX_YEARS.map((taxYear) => (
+                                            <option key={taxYear} value={taxYear}>{taxYear}</option>
+                                        ))}
                                     </select>
                                     <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 sm:h-4 w-3 sm:w-4" />
                                 </div>
@@ -446,7 +451,7 @@ export default function OptionCalculator() {
                                         <HelpCircle className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
                                         {showTaxRateTooltip && (
                                             <div className="absolute left-0 bottom-full mb-2 w-64 sm:w-80 p-3 bg-gray-800 text-white text-xs sm:text-sm rounded shadow-lg z-10">
-                                                <strong>{inputs.taxYear} {inputs.taxYear === '2024' ? '26%' : '26%'} AMT Tax Rate Income Threshold</strong>
+                                                <strong>{inputs.taxYear} 26% AMT Tax Rate Income Threshold</strong>
                                                 <ul className="mt-2 space-y-1">
                                                     <li>Single or head of household: ${AMT_RATE_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
                                                     <li>Married, filing separately: ${AMT_RATE_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
