@@ -194,7 +194,13 @@ export default function OptionCalculator() {
     }, [inputs]);
 
     return (
-        <div className="max-w-6xl mx-auto p-2 sm:p-4">
+        <div className="relative max-w-6xl mx-auto p-2 sm:p-4">
+            {/* Top right on desktop, level with the title; its own line above the title on small screens */}
+            <div className="flex justify-end items-center mb-2 lg:mb-0 lg:absolute lg:top-4 lg:right-4 lg:h-8">
+                <a href="https://prodmason.com/" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
+                    prodmason.com
+                </a>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold mb-2 text-gray-900">
