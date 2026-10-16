@@ -3,19 +3,13 @@ import { useState, useEffect } from 'react';
 import { HelpCircle, ChevronDown } from 'lucide-react';
 
 type FilingStatus = 'Single' | 'Head of Household' | 'Married Filing Jointly' | 'Married Filing Separately';
-type TaxYear = '2025' | '2026';
+type TaxYear = '2026';
 
-const TAX_YEARS: TaxYear[] = ['2025', '2026'];
+const TAX_YEARS: TaxYear[] = ['2026'];
 
-// Tax-year tables are from official IRS inflation adjustment releases and revenue procedures.
-// 2027 is intentionally omitted until official IRS tables are available.
+// Tax-year tables are from official IRS inflation adjustment releases and revenue procedures
+// (2026: Rev. Proc. 2025-32). Add 2027 once the IRS publishes its 2027 revenue procedure.
 const AMT_PHASEOUT_THRESHOLDS = {
-    '2025': {
-        'Single': 626350,
-        'Head of Household': 626350,
-        'Married Filing Jointly': 1252700,
-        'Married Filing Separately': 626350
-    },
     '2026': {
         'Single': 500000,
         'Head of Household': 500000,
@@ -24,13 +18,13 @@ const AMT_PHASEOUT_THRESHOLDS = {
     }
 };
 
+// Above the phase-out threshold the exemption shrinks by this much per dollar of AMT income
+// (OBBBA raised it from 25% to 50% starting in 2026).
+const AMT_PHASEOUT_RATES = {
+    '2026': 0.5
+};
+
 const AMT_EXEMPTIONS = {
-    '2025': {
-        'Single': 88100,
-        'Head of Household': 88100,
-        'Married Filing Jointly': 137000,
-        'Married Filing Separately': 68500
-    },
     '2026': {
         'Single': 90100,
         'Head of Household': 90100,
@@ -40,12 +34,6 @@ const AMT_EXEMPTIONS = {
 };
 
 const AMT_RATE_THRESHOLDS = {
-    '2025': {
-        'Single': 239100,
-        'Head of Household': 239100,
-        'Married Filing Jointly': 239100,
-        'Married Filing Separately': 119550
-    },
     '2026': {
         'Single': 244500,
         'Head of Household': 244500,
@@ -55,44 +43,6 @@ const AMT_RATE_THRESHOLDS = {
 };
 
 const TAX_BRACKETS = {
-    '2025': {
-        'Single': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 11925 },
-            { rate: 0.22, threshold: 48475 },
-            { rate: 0.24, threshold: 103350 },
-            { rate: 0.32, threshold: 197300 },
-            { rate: 0.35, threshold: 250525 },
-            { rate: 0.37, threshold: 626350 }
-        ],
-        'Head of Household': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 17000 },
-            { rate: 0.22, threshold: 64850 },
-            { rate: 0.24, threshold: 103350 },
-            { rate: 0.32, threshold: 197300 },
-            { rate: 0.35, threshold: 250500 },
-            { rate: 0.37, threshold: 626350 }
-        ],
-        'Married Filing Jointly': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 23850 },
-            { rate: 0.22, threshold: 96950 },
-            { rate: 0.24, threshold: 206700 },
-            { rate: 0.32, threshold: 394600 },
-            { rate: 0.35, threshold: 501050 },
-            { rate: 0.37, threshold: 751600 }
-        ],
-        'Married Filing Separately': [
-            { rate: 0.10, threshold: 0 },
-            { rate: 0.12, threshold: 11925 },
-            { rate: 0.22, threshold: 48475 },
-            { rate: 0.24, threshold: 103350 },
-            { rate: 0.32, threshold: 197300 },
-            { rate: 0.35, threshold: 250525 },
-            { rate: 0.37, threshold: 375800 }
-        ]
-    },
     '2026': {
         'Single': [
             { rate: 0.10, threshold: 0 },
@@ -134,12 +84,6 @@ const TAX_BRACKETS = {
 };
 
 const STANDARD_DEDUCTIONS = {
-    '2025': {
-        'Single': 15750,
-        'Head of Household': 23625,
-        'Married Filing Jointly': 31500,
-        'Married Filing Separately': 15750
-    },
     '2026': {
         'Single': 16100,
         'Head of Household': 24150,
@@ -226,13 +170,14 @@ export default function OptionCalculator() {
         const phaseoutThreshold = AMT_PHASEOUT_THRESHOLDS[inputs.taxYear][inputs.filingStatus];
 
         if (amtIncome > phaseoutThreshold) {
-            const reduction = (amtIncome - phaseoutThreshold) * 0.25;
+            const reduction = (amtIncome - phaseoutThreshold) * AMT_PHASEOUT_RATES[inputs.taxYear];
             amtExemption = Math.max(0, amtExemption - reduction);
         }
 
         const amtBase = Math.max(0, amtIncome - amtExemption);
-        const amtRate = amtBase <= AMT_RATE_THRESHOLDS[inputs.taxYear][inputs.filingStatus] ? 0.26 : 0.28;
-        const tentativeMinTax = amtBase * amtRate;
+        // 26% of the AMT base up to the threshold, 28% of the part above it
+        const amtRateThreshold = AMT_RATE_THRESHOLDS[inputs.taxYear][inputs.filingStatus];
+        const tentativeMinTax = 0.26 * Math.min(amtBase, amtRateThreshold) + 0.28 * Math.max(0, amtBase - amtRateThreshold);
         const ordinaryIncomeTax = calculateOrdinaryTax(income, inputs.filingStatus, inputs.taxYear);
         const payableTax = Math.max(tentativeMinTax, ordinaryIncomeTax);
 
@@ -421,7 +366,7 @@ export default function OptionCalculator() {
                                                         </ul>
                                                     </div>
                                                     <div className="text-xs text-gray-300">
-                                                        Above the phase-out threshold, the exemption amount is reduced by 25 cents for each dollar of AMT income.
+                                                        Above the phase-out threshold, the exemption amount is reduced by {AMT_PHASEOUT_RATES[inputs.taxYear] * 100} cents for each dollar of AMT income over the threshold.
                                                     </div>
                                                 </div>
                                             </div>
@@ -451,17 +396,20 @@ export default function OptionCalculator() {
                                         <HelpCircle className="h-4 sm:h-5 w-4 sm:w-5 text-gray-400" />
                                         {showTaxRateTooltip && (
                                             <div className="absolute left-0 bottom-full mb-2 w-64 sm:w-80 p-3 bg-gray-800 text-white text-xs sm:text-sm rounded shadow-lg z-10">
-                                                <strong>{inputs.taxYear} 26% AMT Tax Rate Income Threshold</strong>
+                                                <strong>{inputs.taxYear} 28% AMT Rate Threshold</strong>
                                                 <ul className="mt-2 space-y-1">
                                                     <li>Single or head of household: ${AMT_RATE_THRESHOLDS[inputs.taxYear]['Single'].toLocaleString()}</li>
                                                     <li>Married, filing separately: ${AMT_RATE_THRESHOLDS[inputs.taxYear]['Married Filing Separately'].toLocaleString()}</li>
                                                     <li>Married, filing jointly: ${AMT_RATE_THRESHOLDS[inputs.taxYear]['Married Filing Jointly'].toLocaleString()}</li>
                                                 </ul>
+                                                <div className="mt-2 text-xs text-gray-300">
+                                                    AMT base up to the threshold is taxed at 26%; the part above it at 28%.
+                                                </div>
                                             </div>
                                         )}
                                     </div>
                                 </div>
-                                <div className="text-xs sm:text-sm text-gray-500">(26% or 28% of AMT base)</div>
+                                <div className="text-xs sm:text-sm text-gray-500">(26% of AMT base up to the threshold, 28% above it)</div>
                             </div>
                             <span className="text-base sm:text-xl text-gray-900">${results.tentativeMinTax.toLocaleString()}</span>
                         </div>
