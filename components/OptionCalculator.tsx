@@ -198,7 +198,7 @@ export default function OptionCalculator() {
             {/* Top right on desktop, level with the title; its own line above the title on small screens */}
             <div className="flex justify-end items-center mb-2 lg:mb-0 lg:absolute lg:top-4 lg:right-4 lg:h-8">
                 <a href="https://prodmason.com/" className="text-xs sm:text-sm text-blue-600 hover:text-blue-800">
-                    prodmason.com
+                    Home
                 </a>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
